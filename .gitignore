@@ -169,3 +169,10 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Docker-specific ignores
+docker-compose.override.yml
+.dockerignore
+
+# VS Code settings
+.vscode/
