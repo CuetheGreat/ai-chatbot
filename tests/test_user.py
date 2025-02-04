@@ -1,22 +1,22 @@
-import pytest # type: ignore
-from app.database import Database, Base
-from app.models import User
 import os
+
+import pytest  # type: ignore
 from dotenv import load_dotenv  # type: ignore
 from sqlalchemy.orm import sessionmaker
 
-
+from app.database import Base, Database
+from app.models import User
 from app.models.user import User
-
 
 load_dotenv()
 
 DB_URL = os.getenv("DATABASE_URL")
 DB = Database(DB_URL)
 
+
 @pytest.fixture(scope="module")
 def db():
-    """ Database fixture that sets up and tears down the database for testing. """
+    """Database fixture that sets up and tears down the database for testing."""
     DB.connect()
     Base.metadata.drop_all(bind=DB.engine)
     Base.metadata.create_all(bind=DB.engine)
@@ -24,9 +24,10 @@ def db():
     Base.metadata.drop_all(bind=DB.engine)
     DB.disconnect()
 
+
 @pytest.fixture(scope="function")
 def session(db):
-    """ Creates a new database session for each test and rolls back after execution. """
+    """Creates a new database session for each test and rolls back after execution."""
     SessionLocal = sessionmaker(bind=db.engine)
     session = SessionLocal()
     try:
@@ -35,10 +36,12 @@ def session(db):
         session.rollback()
         session.close()
 
+
 @pytest.fixture(scope="module")
 def new_user():
     """Fixture to create a new user instance without persisting it to the database."""
     return User(username="testuser", email="test@example.com", password="password")
+
 
 def test_user_creation(new_user):
     """Test that a new user object is created correctly"""
@@ -47,9 +50,12 @@ def test_user_creation(new_user):
     assert new_user.password == "password"  # Consider hashing passwords in actual tests
     assert new_user.id is None  # User ID should be None before committing to the DB
 
+
 def test_create_user(session):
-    """ Test creating a user """
-    new_user = User(username="testuser", email="testuser@example.com", password="password")
+    """Test creating a user"""
+    new_user = User(
+        username="testuser", email="testuser@example.com", password="password"
+    )
     session.add(new_user)
     session.commit()
     session.refresh(new_user)
@@ -58,7 +64,7 @@ def test_create_user(session):
 
 
 def test_read_user(session):
-    """ Test reading a user """
+    """Test reading a user"""
     user = session.query(User).filter_by(username="testuser").first()
 
     assert user is not None
@@ -66,7 +72,7 @@ def test_read_user(session):
 
 
 def test_update_user(session):
-    """ Test updating a user """
+    """Test updating a user"""
     user = session.query(User).filter_by(username="testuser").first()
     assert user is not None
 
@@ -78,7 +84,7 @@ def test_update_user(session):
 
 
 def test_delete_user(session):
-    """ Test deleting a user """
+    """Test deleting a user"""
     user = session.query(User).filter_by(username="testuser").first()
     assert user is not None
 

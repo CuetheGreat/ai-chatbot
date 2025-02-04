@@ -14,7 +14,6 @@ services:
       - db
     command: bash -c "PYTHONPATH=/app uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
 
-
   db:
     container_name: ai-chatbot-db
     image: postgres:latest
