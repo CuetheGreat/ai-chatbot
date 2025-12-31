@@ -4,8 +4,8 @@ import pytest  # type: ignore
 from dotenv import load_dotenv  # type: ignore
 from sqlalchemy.orm import sessionmaker
 
+from app.auth import get_password_hash, verify_password
 from app.database import Base, Database
-from app.models import User
 from app.models.user import User
 
 load_dotenv()
@@ -40,27 +40,30 @@ def session(db):
 @pytest.fixture(scope="module")
 def new_user():
     """Fixture to create a new user instance without persisting it to the database."""
-    return User(username="testuser", email="test@example.com", password="password")
+    hashed_password = get_password_hash("password")
+    return User(username="testuser", email="test@example.com", password=hashed_password)
 
 
 def test_user_creation(new_user):
     """Test that a new user object is created correctly"""
     assert new_user.username == "testuser"
     assert new_user.email == "test@example.com"
-    assert new_user.password == "password"  # Consider hashing passwords in actual tests
+    assert verify_password("password", new_user.password)
     assert new_user.id is None  # User ID should be None before committing to the DB
 
 
 def test_create_user(session):
-    """Test creating a user"""
+    """Test creating a user with hashed password"""
+    hashed_password = get_password_hash("password")
     new_user = User(
-        username="testuser", email="testuser@example.com", password="password"
+        username="testuser", email="testuser@example.com", password=hashed_password
     )
     session.add(new_user)
     session.commit()
     session.refresh(new_user)
 
     assert new_user.id is not None
+    assert verify_password("password", new_user.password)
 
 
 def test_read_user(session):
